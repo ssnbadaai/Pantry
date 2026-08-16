@@ -1,0 +1,8 @@
+/includes/config.php
+/vendor/
+/local-server.log
+/local-server.err.log
+/uploads/original/*
+/uploads/optimized/*
+/uploads/thumbnails/*
+!/uploads/.htaccess

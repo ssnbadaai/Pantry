@@ -1,0 +1,10 @@
+{
+  "name": "pantry/self-hosted-newsletter",
+  "description": "Self-hosted newsletter builder, subscriber manager, and email sender for cPanel PHP hosting.",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.0",
+    "phpmailer/phpmailer": "^6.9"
+  }
+}

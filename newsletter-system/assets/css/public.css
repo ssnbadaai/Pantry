@@ -1,0 +1,40 @@
+body {
+    margin: 0;
+    background: #f5f7fb;
+    color: #172033;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.public-shell {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 16px;
+}
+
+.public-card {
+    background: #fff;
+    border: 1px solid #dfe5ee;
+    border-radius: 8px;
+    padding: 24px;
+}
+
+.archive-list {
+    display: grid;
+    gap: 12px;
+}
+
+.archive-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #dfe5ee;
+    border-radius: 8px;
+}
+
+@media (max-width: 640px) {
+    .archive-item {
+        display: block;
+    }
+}
