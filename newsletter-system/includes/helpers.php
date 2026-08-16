@@ -97,3 +97,46 @@ function safe_filename(string $name): string
     $name = preg_replace('/[^a-zA-Z0-9._-]+/', '-', $name) ?: 'image';
     return trim($name, '-');
 }
+
+function visitor_hash(): string
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    return hash('sha256', $ip . '|' . $agent);
+}
+
+function record_newsletter_read(int $newsletterId): void
+{
+    db()->prepare('insert into email_events (newsletter_id,subscriber_id,event_type,ip_hash,user_agent,created_at) values (?,null,"view",?,?,now())')
+        ->execute([$newsletterId, visitor_hash(), substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255)]);
+}
+
+function newsletter_read_count(int $newsletterId): int
+{
+    $emailReaders = (int) db_value(
+        'select count(distinct subscriber_id) from email_events where newsletter_id=? and event_type="open" and subscriber_id is not null',
+        [$newsletterId]
+    );
+    $webReaders = (int) db_value(
+        'select count(distinct ip_hash) from email_events where newsletter_id=? and event_type="view" and subscriber_id is null and ip_hash is not null',
+        [$newsletterId]
+    );
+    return $emailReaders + $webReaders;
+}
+
+function total_newsletter_read_count(): int
+{
+    return (int) db_value(
+        'select count(*) from (
+            select newsletter_id, subscriber_id as reader_key
+            from email_events
+            where event_type="open" and subscriber_id is not null
+            group by newsletter_id, subscriber_id
+            union all
+            select newsletter_id, ip_hash as reader_key
+            from email_events
+            where event_type="view" and subscriber_id is null and ip_hash is not null
+            group by newsletter_id, ip_hash
+        ) as reader_rows'
+    );
+}

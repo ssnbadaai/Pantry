@@ -9,6 +9,7 @@ $metrics = [
     'Total newsletters' => (int) db_value('select count(*) from newsletters'),
     'Draft newsletters' => (int) db_value("select count(*) from newsletters where status = 'draft'"),
     'Sent newsletters' => (int) db_value("select count(*) from newsletters where status = 'sent'"),
+    'Total reads' => total_newsletter_read_count(),
 ];
 $recent = db_all('select * from newsletters order by updated_at desc limit 8');
 admin_header('Dashboard', 'dashboard');
@@ -25,12 +26,13 @@ admin_header('Dashboard', 'dashboard');
 </div>
 <div class="table-wrap">
     <table class="table align-middle">
-        <thead><tr><th>Title</th><th>Status</th><th>Created</th><th>Sent</th><th></th></tr></thead>
+        <thead><tr><th>Title</th><th>Status</th><th>Reads</th><th>Created</th><th>Sent</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($recent as $item): ?>
             <tr>
                 <td><?= h($item['title']) ?></td>
                 <td><span class="status-pill status-<?= h($item['status']) ?>"><?= h(ucfirst($item['status'])) ?></span></td>
+                <td><?= number_format(newsletter_read_count((int) $item['id'])) ?></td>
                 <td><?= h($item['created_at']) ?></td>
                 <td><?= h($item['sent_at'] ?: '-') ?></td>
                 <td class="text-end">
@@ -39,7 +41,7 @@ admin_header('Dashboard', 'dashboard');
                 </td>
             </tr>
         <?php endforeach; ?>
-        <?php if (!$recent): ?><tr><td colspan="5" class="text-muted">No newsletters yet.</td></tr><?php endif; ?>
+        <?php if (!$recent): ?><tr><td colspan="6" class="text-muted">No newsletters yet.</td></tr><?php endif; ?>
         </tbody>
     </table>
 </div>

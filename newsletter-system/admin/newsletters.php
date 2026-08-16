@@ -39,13 +39,14 @@ admin_header('Newsletters', 'newsletters');
 </div>
 <div class="table-wrap">
     <table class="table align-middle">
-        <thead><tr><th>Title</th><th>Subject</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+        <thead><tr><th>Title</th><th>Subject</th><th>Status</th><th>Reads</th><th>Updated</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($items as $item): ?>
             <tr>
                 <td><?= h($item['title']) ?></td>
                 <td><?= h($item['subject']) ?></td>
                 <td><span class="status-pill status-<?= h($item['status']) ?>"><?= h(ucfirst($item['status'])) ?></span></td>
+                <td><?= number_format(newsletter_read_count((int) $item['id'])) ?></td>
                 <td><?= h($item['updated_at']) ?></td>
                 <td class="text-end">
                     <a class="btn btn-sm btn-outline-primary" href="<?= h(app_url('admin/newsletter-edit.php?id=' . $item['id'])) ?>">Edit</a>
@@ -55,7 +56,7 @@ admin_header('Newsletters', 'newsletters');
                 </td>
             </tr>
         <?php endforeach; ?>
-        <?php if (!$items): ?><tr><td colspan="5" class="text-muted">No newsletters yet.</td></tr><?php endif; ?>
+        <?php if (!$items): ?><tr><td colspan="6" class="text-muted">No newsletters yet.</td></tr><?php endif; ?>
         </tbody>
     </table>
 </div>

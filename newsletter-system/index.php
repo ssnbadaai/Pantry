@@ -53,7 +53,8 @@ if (starts_with($route, 'open/')) {
     exit;
 }
 
-$newsletter = current_admin()
+$isAdminPreview = (bool) current_admin();
+$newsletter = $isAdminPreview
     ? db_row('select * from newsletters where slug=?', [$route])
     : db_row('select * from newsletters where slug=? and status in ("ready","sent","archived")', [$route]);
 if (!$newsletter) {
@@ -62,6 +63,10 @@ if (!$newsletter) {
     echo '<div class="public-card"><h1>Newsletter not found</h1><p>This issue is not available.</p></div>';
     public_footer();
     exit;
+}
+
+if (!$isAdminPreview) {
+    record_newsletter_read((int) $newsletter['id']);
 }
 
 public_header($newsletter['title']);
