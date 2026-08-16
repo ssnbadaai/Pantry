@@ -82,24 +82,26 @@ function render_block_html(array $block, array $theme, string $mode): string
     $linkColor = h($theme['link'] ?? '#2563eb');
     $image = $block['media']['file_path'] ?? ($content['image_url'] ?? '');
     $imageUrl = $image ? upload_url_from_path((string) $image) : '';
+    $align = h(newsletter_align($content['align'] ?? 'start'));
+    $font = h(newsletter_font($content['font'] ?? ''));
     ob_start();
 
     if ($block['block_type'] === 'headline'): ?>
-        <h3 style="font-size:<?= (int) ($content['size'] ?? 28) ?>px;text-align:<?= h(newsletter_align($content['align'] ?? 'start')) ?>;margin:0 0 14px;">
+        <h3 style="font-size:<?= (int) ($content['size'] ?? 28) ?>px;text-align:<?= $align ?>;font-family:<?= $font ?>;margin:0 0 14px;">
             <?php if (!empty($content['url'])): ?><a style="color:<?= $linkColor ?>;text-decoration:none;" href="<?= h($content['url']) ?>"><?php endif; ?>
             <?= h($content['text'] ?? 'Headline') ?>
             <?php if (!empty($content['url'])): ?></a><?php endif; ?>
         </h3>
     <?php elseif ($block['block_type'] === 'text'): ?>
-        <div style="font-size:16px;line-height:1.6;margin-bottom:16px;text-align:<?= h(newsletter_align($content['align'] ?? 'start')) ?>;"><?= clean_html((string) ($content['html'] ?? '<p>Write your text here.</p>')) ?></div>
+        <div style="font-size:16px;line-height:1.6;margin-bottom:16px;text-align:<?= $align ?>;font-family:<?= $font ?>;"><?= clean_html((string) ($content['html'] ?? '<p>Write your text here.</p>')) ?></div>
     <?php elseif ($block['block_type'] === 'image'): ?>
-        <?php if ($imageUrl): ?><img src="<?= h($imageUrl) ?>" alt="<?= h($content['alt'] ?? '') ?>" style="display:block;width:100%;height:auto;border-radius:<?= (int) ($theme['radius'] ?? 8) ?>px;margin-bottom:18px;"><?php endif; ?>
+        <?php if ($imageUrl): ?><div style="text-align:<?= $align ?>;"><img src="<?= h($imageUrl) ?>" alt="<?= h($content['alt'] ?? '') ?>" style="display:inline-block;width:100%;max-width:100%;height:auto;border-radius:<?= (int) ($theme['radius'] ?? 8) ?>px;margin-bottom:18px;"></div><?php endif; ?>
     <?php elseif ($block['block_type'] === 'button'): ?>
-        <p style="margin:18px 0;"><a href="<?= h($content['url'] ?? '#') ?>" style="display:inline-block;background:<?= $buttonColor ?>;color:#fff;text-decoration:none;padding:11px 18px;border-radius:6px;font-weight:bold;"><?= h($content['text'] ?? 'Read More') ?></a></p>
+        <p style="margin:18px 0;text-align:<?= $align ?>;"><a href="<?= h($content['url'] ?? '#') ?>" style="display:inline-block;background:<?= $buttonColor ?>;color:#fff;text-decoration:none;padding:11px 18px;border-radius:6px;font-weight:bold;font-family:<?= $font ?>;"><?= h($content['text'] ?? 'Read More') ?></a></p>
     <?php elseif ($block['block_type'] === 'divider'): ?>
-        <hr style="border:0;border-top:1px solid #e5e7eb;margin:22px 0;">
+        <div style="text-align:<?= $align ?>;"><hr style="display:inline-block;width:100%;border:0;border-top:1px solid #e5e7eb;margin:22px 0;"></div>
     <?php else: ?>
-        <article style="margin-bottom:24px;">
+        <article style="margin-bottom:24px;text-align:<?= $align ?>;font-family:<?= $font ?>;">
             <?php if ($imageUrl): ?><a href="<?= h($content['url'] ?? '#') ?>"><img src="<?= h($imageUrl) ?>" alt="<?= h($content['image_alt'] ?? '') ?>" style="display:block;width:100%;height:auto;border-radius:<?= (int) ($theme['radius'] ?? 8) ?>px;margin-bottom:14px;"></a><?php endif; ?>
             <?php if (!empty($content['category'])): ?><div style="font-size:12px;font-weight:bold;letter-spacing:.04em;text-transform:uppercase;color:<?= $linkColor ?>;"><?= h($content['category']) ?></div><?php endif; ?>
             <h3 style="font-size:23px;line-height:1.2;margin:7px 0 8px;color:#111827;">
@@ -122,6 +124,19 @@ function newsletter_align(string $align): string
         return 'end';
     }
     return 'start';
+}
+
+function newsletter_font(string $font): string
+{
+    $fonts = [
+        'Tahoma, Arial, sans-serif',
+        'Arial, Helvetica, sans-serif',
+        '"Segoe UI", Tahoma, Arial, sans-serif',
+        'Georgia, "Times New Roman", serif',
+        '"Times New Roman", Times, serif',
+        '"Courier New", Courier, monospace',
+    ];
+    return in_array($font, $fonts, true) ? $font : 'Arial, Helvetica, sans-serif';
 }
 
 function render_newsletter_footer_html(array $theme, array $newsletter = [], ?array $subscriber = null): string

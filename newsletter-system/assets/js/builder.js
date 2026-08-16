@@ -14,6 +14,15 @@
     let selected = null;
     let selectedImageTarget = null;
     let saveTimer = null;
+    const FONT_OPTIONS = [
+        { label: 'Default', value: '' },
+        { label: 'Tahoma', value: 'Tahoma, Arial, sans-serif' },
+        { label: 'Arial', value: 'Arial, Helvetica, sans-serif' },
+        { label: 'Segoe UI', value: '"Segoe UI", Tahoma, Arial, sans-serif' },
+        { label: 'Georgia', value: 'Georgia, "Times New Roman", serif' },
+        { label: 'Times New Roman', value: '"Times New Roman", Times, serif' },
+        { label: 'Courier New', value: '"Courier New", Courier, monospace' }
+    ];
 
     const state = {
         meta: Object.assign({}, app.payload.newsletter),
@@ -266,11 +275,15 @@
         el.querySelector('[data-action="delete"]').addEventListener('click', () => deleteBlock(sectionIndex, blockIndex));
 
         const body = el.querySelector('.block-body');
+        const align = escapeAttr(block.content.align || 'start');
+        const font = escapeAttr(fontStack(block.content.font || ''));
+        body.style.textAlign = block.content.align || 'start';
+        body.style.fontFamily = fontStack(block.content.font || '');
         if (block.block_type === 'headline') {
-            body.innerHTML = `<h2 class="editable-text" dir="auto" contenteditable="true" style="text-align:${escapeAttr(block.content.align || 'start')};font-size:${Number(block.content.size || 28)}px">${escapeHtml(block.content.text || '')}</h2>`;
+            body.innerHTML = `<h2 class="editable-text" dir="auto" contenteditable="true" style="text-align:${align};font-size:${Number(block.content.size || 28)}px;font-family:${font}">${escapeHtml(block.content.text || '')}</h2>`;
             bindText(body.querySelector('.editable-text'), value => block.content.text = value);
         } else if (block.block_type === 'text') {
-            body.innerHTML = `<div class="editable-text" dir="auto" contenteditable="true" style="text-align:${escapeAttr(block.content.align || 'start')}">${block.content.html || ''}</div>`;
+            body.innerHTML = `<div class="editable-text" dir="auto" contenteditable="true" style="text-align:${align};font-family:${font}">${block.content.html || ''}</div>`;
             bindText(body.querySelector('.editable-text'), value => block.content.html = value, true);
         } else if (block.block_type === 'image') {
             const url = block.content.image_url || mediaUrl(block.media) || app.appUrl + '/assets/img/placeholder.svg';
@@ -282,13 +295,13 @@
                 openImageSettings();
             });
         } else if (block.block_type === 'button') {
-            body.innerHTML = `<a class="btn btn-primary editable-text" contenteditable="true" href="${escapeAttr(block.content.url || '#')}">${escapeHtml(block.content.text || 'Read More')}</a>`;
+            body.innerHTML = `<a class="btn btn-primary editable-text" contenteditable="true" href="${escapeAttr(block.content.url || '#')}" style="font-family:${font}">${escapeHtml(block.content.text || 'Read More')}</a>`;
             bindText(body.querySelector('.editable-text'), value => block.content.text = value);
         } else if (block.block_type === 'divider') {
             body.innerHTML = '<hr>';
         } else {
             const url = block.content.image_url || mediaUrl(block.media) || app.appUrl + '/assets/img/placeholder.svg';
-            body.innerHTML = `<article>
+            body.innerHTML = `<article style="text-align:${align};font-family:${font}">
                 <img class="article-image ${url.includes('placeholder.svg') ? 'image-placeholder' : ''}" src="${escapeAttr(url)}" alt="${escapeAttr(block.content.image_alt || '')}" ${imageAttrs(block)}>
                 <div class="article-category editable-text" dir="auto" contenteditable="true" data-field="category">${escapeHtml(block.content.category || '')}</div>
                 <h3 class="article-headline editable-text" dir="auto" contenteditable="true" data-field="headline">${escapeHtml(block.content.headline || '')}</h3>
@@ -346,27 +359,29 @@
         settingsForm.classList.remove('d-none');
         const block = selected.block;
         const c = block.content;
-        let html = `<div class="text-muted small">Block type: ${escapeHtml(block.block_type)}</div>`;
+        let html = `<div class="text-muted small">Editing: ${escapeHtml(blockLabel(block.block_type))}</div>`;
         if (block.block_type === 'headline') {
-            html += input('Headline', 'text', c.text || '', 'text') + input('Link', 'url', c.url || '', 'url') + input('Font size', 'number', c.size || 28, 'size') + alignmentControl(c.align || 'start');
+            html += input('Headline', 'text', c.text || '', 'text') + input('Link', 'url', c.url || '', 'url') + fontControl(c.font || '') + input('Font size', 'number', c.size || 28, 'size') + alignmentControl(c.align || 'start');
         } else if (block.block_type === 'text') {
-            html += `<label>Text HTML<textarea class="form-control" data-field="html" rows="7">${escapeHtml(c.html || '')}</textarea></label>` + alignmentControl(c.align || 'start');
+            html += `<label>Text<textarea class="form-control" data-field="html" data-format="plain-text" rows="7">${escapeHtml(htmlToPlainText(c.html || ''))}</textarea></label>` + fontControl(c.font || '') + alignmentControl(c.align || 'start');
         } else if (block.block_type === 'article') {
-            html += input('Category', 'text', c.category || '', 'category') + input('Headline', 'text', c.headline || '', 'headline') + textarea('Description', c.description || '', 'description') + input('Article URL', 'url', c.url || '', 'url') + input('Button text', 'text', c.button_text || 'Read More', 'button_text') + imageControls();
+            html += input('Category', 'text', c.category || '', 'category') + input('Headline', 'text', c.headline || '', 'headline') + textarea('Description', c.description || '', 'description') + input('Article URL', 'url', c.url || '', 'url') + input('Button text', 'text', c.button_text || 'Read More', 'button_text') + fontControl(c.font || '') + alignmentControl(c.align || 'start') + imageControls();
         } else if (block.block_type === 'image') {
-            html += imageControls();
+            html += imageControls() + alignmentControl(c.align || 'start');
         } else if (block.block_type === 'button') {
-            html += input('Button text', 'text', c.text || '', 'text') + input('Button URL', 'url', c.url || '', 'url');
+            html += input('Button text', 'text', c.text || '', 'text') + input('Button URL', 'url', c.url || '', 'url') + fontControl(c.font || '') + alignmentControl(c.align || 'start');
         } else {
-            html += '<p class="text-muted">No settings for this block.</p>';
+            html += alignmentControl(c.align || 'start');
         }
         settingsForm.innerHTML = html;
         settingsForm.querySelectorAll('[data-field]').forEach(inputEl => {
             inputEl.addEventListener('input', () => {
-                c[inputEl.dataset.field] = inputEl.value;
+                c[inputEl.dataset.field] = settingValue(inputEl);
                 scheduleSave();
             });
             inputEl.addEventListener('change', () => {
+                c[inputEl.dataset.field] = settingValue(inputEl);
+                scheduleSave();
                 render();
                 keepSelection();
             });
@@ -424,7 +439,51 @@
     }
 
     function select(label, field, value, options) {
-        return `<label>${label}<select class="form-select" data-field="${field}">${options.map(option => `<option value="${option}" ${option === value ? 'selected' : ''}>${option}</option>`).join('')}</select></label>`;
+        return `<label>${label}<select class="form-select" data-field="${field}">${options.map(option => {
+            const optionValue = typeof option === 'string' ? option : option.value;
+            const optionLabel = typeof option === 'string' ? option : option.label;
+            return `<option value="${escapeAttr(optionValue)}" ${optionValue === value ? 'selected' : ''}>${escapeHtml(optionLabel)}</option>`;
+        }).join('')}</select></label>`;
+    }
+
+    function fontControl(value) {
+        return select('Font', 'font', value || '', FONT_OPTIONS);
+    }
+
+    function fontStack(value) {
+        return FONT_OPTIONS.some(option => option.value === value) && value ? value : 'Arial, Helvetica, sans-serif';
+    }
+
+    function settingValue(inputEl) {
+        return inputEl.dataset.format === 'plain-text' ? plainTextToHtml(inputEl.value) : inputEl.value;
+    }
+
+    function htmlToPlainText(html) {
+        const div = document.createElement('div');
+        div.innerHTML = html || '';
+        div.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+        div.querySelectorAll('p,h1,h2,h3,li,blockquote').forEach(el => {
+            el.appendChild(document.createTextNode('\n\n'));
+        });
+        return div.textContent.replace(/\n{3,}/g, '\n\n').trim();
+    }
+
+    function plainTextToHtml(text) {
+        const paragraphs = String(text || '').split(/\n{2,}/).map(item => item.trim()).filter(Boolean);
+        if (!paragraphs.length) return '';
+        return paragraphs.map(paragraph => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br>')}</p>`).join('');
+    }
+
+    function blockLabel(type) {
+        const labels = {
+            headline: 'Headline',
+            text: 'Text',
+            article: 'Article',
+            image: 'Image',
+            button: 'Button',
+            divider: 'Divider'
+        };
+        return labels[type] || 'Block';
     }
 
     function alignmentControl(value) {
