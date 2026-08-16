@@ -74,6 +74,7 @@ $theme = setting('theme', []);
                 <button class="btn btn-outline-secondary" data-add-block="button">Button</button>
                 <button class="btn btn-outline-secondary" data-add-block="divider">Divider</button>
             </div>
+            <button class="btn btn-outline-primary w-100 mb-2" id="pantryTemplateBtn" type="button">Pantry template</button>
             <button class="btn btn-primary w-100 mb-4" id="addSectionBtn" type="button">Add Section</button>
             <h2 class="h6">Newsletter</h2>
             <div class="field-stack">

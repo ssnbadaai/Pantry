@@ -48,7 +48,16 @@ function render_newsletter_html(array $payload, string $mode = 'web', ?array $su
     <div class="nl-container" style="max-width:<?= (int) ($theme['email_width'] ?? 680) ?>px;margin:0 auto;background:#fff;">
         <?php foreach ($sections as $section): ?>
             <?php if (empty($section['title']) && empty($section['blocks'])) continue; ?>
-            <section style="padding:26px 32px;border-bottom:1px solid #eef2f7;">
+            <?php
+                $sectionSettings = $section['settings'] ?? [];
+                $sectionBackground = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($sectionSettings['background'] ?? '')) ? (string) $sectionSettings['background'] : '#ffffff';
+                $sectionAccent = preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($sectionSettings['accent'] ?? '')) ? (string) $sectionSettings['accent'] : '';
+                $sectionStyle = 'padding:26px 32px;border-bottom:1px solid #eef2f7;background:' . $sectionBackground . ';';
+                if ($sectionAccent !== '') {
+                    $sectionStyle .= 'border-top:4px solid ' . $sectionAccent . ';';
+                }
+            ?>
+            <section style="<?= h($sectionStyle) ?>">
                 <?php if (!empty($section['title'])): ?>
                     <h2 style="font-size:18px;margin:0 0 18px;color:<?= h($theme['secondary'] ?? '#0f172a') ?>;"><?= h($section['title']) ?></h2>
                 <?php endif; ?>

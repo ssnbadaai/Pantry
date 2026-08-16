@@ -53,6 +53,102 @@
         return base;
     }
 
+    function templateBlock(type, content, settings) {
+        return {
+            id: tempId(),
+            block_type: type,
+            content: content || {},
+            settings: settings || {},
+            media: null,
+            temp: true
+        };
+    }
+
+    function pantryTemplateSections() {
+        const placeholder = app.appUrl + '/assets/img/placeholder.svg';
+        return [
+            {
+                id: tempId(),
+                title: '',
+                section_type: 'content',
+                settings: { background: '#ffffff', accent: '#1faaaa' },
+                blocks: [
+                    templateBlock('headline', { text: 'يوليــــو ٢٠٢٦م', size: 24, align: 'center', url: '' }),
+                    templateBlock('text', { align: 'center', html: '<p><strong>للناس اللي تحب بانتري عُمق وتجتمع حوله لتبادل أطراف الحديث وشرب القهوة أو الشاي وتناول ما لذ وطاب.</strong></p><p>كُتبت النشرة بواسطة: فريق عُمق الإبداعي</p>' }),
+                    templateBlock('image', { image_id: null, image_url: placeholder, alt: 'صورة افتتاحية للنشرة' })
+                ]
+            },
+            {
+                id: tempId(),
+                title: '',
+                section_type: 'content',
+                settings: { background: '#fbf8cc', accent: '#d4ce7c' },
+                blocks: [
+                    templateBlock('headline', { text: 'كلٌ منـــا بطل قصته الخاصة', size: 27, align: 'center', url: '' }),
+                    templateBlock('text', { align: 'center', html: '<p><strong>اكتب هنا مقدمة قصيرة تفتح مساحة للحكايات والتجارب والمعرفة التي تريد مشاركتها في هذا العدد.</strong></p><p>بانتظار قصتك لتكون جزءًا من نشراتنا القادمة.</p>' }),
+                    templateBlock('button', { text: 'شارك قصتك', url: '' })
+                ]
+            },
+            {
+                id: tempId(),
+                title: '🧠 عادات العقل',
+                section_type: 'content',
+                settings: { background: '#ffffff', accent: '#1faaaa' },
+                blocks: [
+                    templateBlock('headline', { text: 'عنوان المقال الرئيسي', size: 30, align: 'start', url: '' }),
+                    templateBlock('text', { align: 'start', html: '<p><strong>اكتب السؤال أو الجملة التي تفتح المقال هنا.</strong></p><p>ابدأ المقال بفقرة قريبة وواضحة، ثم رتّب الأفكار في فقرات قصيرة تجعل القراءة سهلة داخل البريد وعلى الهاتف.</p><p>كُتب المقال بواسطة: اسم الكاتب</p>' })
+                ]
+            },
+            {
+                id: tempId(),
+                title: '🧠 فسحة للتعبير',
+                section_type: 'content',
+                settings: { background: '#f3e2d2', accent: '#b82023' },
+                blocks: [
+                    templateBlock('headline', { text: 'عنوان النص أو القصة', size: 28, align: 'start', url: '' }),
+                    templateBlock('text', { align: 'start', html: '<p>اكتب هنا قصة أو تجربة شخصية بنبرة إنسانية. استخدم فقرات قصيرة حتى تبقى القراءة مريحة.</p><p>اسم المشارك</p>' })
+                ]
+            },
+            {
+                id: tempId(),
+                title: '📝 من عجائب اللغة',
+                section_type: 'content',
+                settings: { background: '#ffffff', accent: '#5211a9' },
+                blocks: [
+                    templateBlock('text', { align: 'center', html: '<p><strong>ضع هنا اقتباسًا لغويًا، أبياتًا قصيرة، أو معلومة خفيفة.</strong></p><p>مشاركة من: اسم المشارك</p>' })
+                ]
+            },
+            {
+                id: tempId(),
+                title: 'نتشارك المعرفة 📚',
+                section_type: 'content',
+                settings: { background: '#cdf7df', accent: '#01a4c6' },
+                blocks: [
+                    templateBlock('article', { category: 'مقال / رابط', headline: 'عنوان المادة المقترحة', description: 'اكتب وصفًا قصيرًا للمقال أو الرابط أو المصدر الذي تريد مشاركته.', url: '', button_text: 'اقرأ المزيد', image_id: null, image_url: placeholder, image_alt: 'صورة المادة' })
+                ]
+            }
+        ];
+    }
+
+    function applyPantryTemplate() {
+        const hasContent = state.sections.some(section => section.title || (section.blocks && section.blocks.length));
+        if (hasContent && !confirm('Apply the Pantry template and replace the current sections?')) return;
+        state.meta.direction = 'rtl';
+        state.meta.title = state.meta.title && state.meta.title !== 'New Newsletter' ? state.meta.title : 'نشرة البانتري';
+        state.meta.subject = state.meta.subject && state.meta.subject !== 'New Newsletter' ? state.meta.subject : 'نشرة البانتري';
+        state.meta.preview_text = state.meta.preview_text || 'عدد جديد من نشرة البانتري.';
+        titleInput.value = state.meta.title;
+        document.querySelectorAll('.meta-field').forEach(field => {
+            const key = field.dataset.meta;
+            if (Object.prototype.hasOwnProperty.call(state.meta, key)) field.value = state.meta[key] || '';
+        });
+        state.sections = pantryTemplateSections();
+        selected = null;
+        scheduleSave();
+        render();
+        renderSettings();
+    }
+
     function render() {
         canvas.innerHTML = '';
         canvas.setAttribute('dir', state.meta.direction || 'rtl');
@@ -60,6 +156,8 @@
             const sectionEl = document.createElement('section');
             sectionEl.className = 'canvas-section';
             sectionEl.dataset.sectionIndex = String(sectionIndex);
+            if (section.settings && section.settings.background) sectionEl.style.background = section.settings.background;
+            if (section.settings && section.settings.accent) sectionEl.style.borderTop = `4px solid ${section.settings.accent}`;
             sectionEl.innerHTML = `<input class="section-title-input" value="${escapeAttr(section.title)}" aria-label="Section title"><div class="section-blocks"></div>`;
             sectionEl.querySelector('.section-title-input').addEventListener('input', event => {
                 section.title = event.target.value;
@@ -499,6 +597,7 @@
         scheduleSave();
         render();
     });
+    document.getElementById('pantryTemplateBtn').addEventListener('click', applyPantryTemplate);
     document.getElementById('manualSaveBtn').addEventListener('click', saveNow);
     document.getElementById('desktopPreview').addEventListener('click', () => canvas.classList.remove('mobile'));
     document.getElementById('mobilePreview').addEventListener('click', () => canvas.classList.add('mobile'));
