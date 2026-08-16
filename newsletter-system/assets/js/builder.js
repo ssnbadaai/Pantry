@@ -283,7 +283,7 @@
             body.innerHTML = `<h2 class="editable-text" dir="auto" contenteditable="true" style="text-align:${align};font-size:${Number(block.content.size || 28)}px;font-family:${font}">${escapeHtml(block.content.text || '')}</h2>`;
             bindText(body.querySelector('.editable-text'), value => block.content.text = value);
         } else if (block.block_type === 'text') {
-            body.innerHTML = `<div class="editable-text" dir="auto" contenteditable="true" style="text-align:${align};font-family:${font}">${block.content.html || ''}</div>`;
+            body.innerHTML = `<div class="editable-text" dir="auto" contenteditable="true" style="text-align:${align};font-size:${Number(block.content.size || 16)}px;font-family:${font}">${block.content.html || ''}</div>`;
             bindText(body.querySelector('.editable-text'), value => block.content.html = value, true);
         } else if (block.block_type === 'image') {
             const url = block.content.image_url || mediaUrl(block.media) || app.appUrl + '/assets/img/placeholder.svg';
@@ -295,7 +295,7 @@
                 openImageSettings();
             });
         } else if (block.block_type === 'button') {
-            body.innerHTML = `<a class="btn btn-primary editable-text" contenteditable="true" href="${escapeAttr(block.content.url || '#')}" style="font-family:${font}">${escapeHtml(block.content.text || 'Read More')}</a>`;
+            body.innerHTML = `<a class="btn btn-primary editable-text" contenteditable="true" href="${escapeAttr(block.content.url || '#')}" style="font-size:${Number(block.content.size || 16)}px;font-family:${font}">${escapeHtml(block.content.text || 'Read More')}</a>`;
             bindText(body.querySelector('.editable-text'), value => block.content.text = value);
         } else if (block.block_type === 'divider') {
             body.innerHTML = '<hr>';
@@ -303,10 +303,10 @@
             const url = block.content.image_url || mediaUrl(block.media) || app.appUrl + '/assets/img/placeholder.svg';
             body.innerHTML = `<article style="text-align:${align};font-family:${font}">
                 <img class="article-image ${url.includes('placeholder.svg') ? 'image-placeholder' : ''}" src="${escapeAttr(url)}" alt="${escapeAttr(block.content.image_alt || '')}" ${imageAttrs(block)}>
-                <div class="article-category editable-text" dir="auto" contenteditable="true" data-field="category">${escapeHtml(block.content.category || '')}</div>
-                <h3 class="article-headline editable-text" dir="auto" contenteditable="true" data-field="headline">${escapeHtml(block.content.headline || '')}</h3>
-                <p class="article-description editable-text" dir="auto" contenteditable="true" data-field="description">${escapeHtml(block.content.description || '')}</p>
-                <a href="${escapeAttr(block.content.url || '#')}" class="fw-bold">${escapeHtml(block.content.button_text || 'Read More')}</a>
+                <div class="article-category editable-text" dir="auto" contenteditable="true" data-field="category" style="font-size:${Number(block.content.category_size || 12)}px">${escapeHtml(block.content.category || '')}</div>
+                <h3 class="article-headline editable-text" dir="auto" contenteditable="true" data-field="headline" style="font-size:${Number(block.content.headline_size || 24)}px">${escapeHtml(block.content.headline || '')}</h3>
+                <p class="article-description editable-text" dir="auto" contenteditable="true" data-field="description" style="font-size:${Number(block.content.description_size || 15)}px">${escapeHtml(block.content.description || '')}</p>
+                <a href="${escapeAttr(block.content.url || '#')}" class="fw-bold" style="font-size:${Number(block.content.button_size || 15)}px">${escapeHtml(block.content.button_text || 'Read More')}</a>
             </article>`;
             body.querySelector('img').addEventListener('click', event => {
                 event.stopPropagation();
@@ -361,15 +361,15 @@
         const c = block.content;
         let html = `<div class="text-muted small">Editing: ${escapeHtml(blockLabel(block.block_type))}</div>`;
         if (block.block_type === 'headline') {
-            html += input('Headline', 'text', c.text || '', 'text') + input('Link', 'url', c.url || '', 'url') + fontControl(c.font || '') + input('Font size', 'number', c.size || 28, 'size') + alignmentControl(c.align || 'start');
+            html += input('Headline', 'text', c.text || '', 'text') + input('Link', 'url', c.url || '', 'url') + fontControl(c.font || '') + numberInput('Font size', c.size || 28, 'size', 10, 72) + alignmentControl(c.align || 'start');
         } else if (block.block_type === 'text') {
-            html += `<label>Text<textarea class="form-control" data-field="html" data-format="plain-text" rows="7">${escapeHtml(htmlToPlainText(c.html || ''))}</textarea></label>` + fontControl(c.font || '') + alignmentControl(c.align || 'start');
+            html += `<label>Text<textarea class="form-control" data-field="html" data-format="plain-text" rows="7">${escapeHtml(htmlToPlainText(c.html || ''))}</textarea></label>` + fontControl(c.font || '') + numberInput('Text size', c.size || 16, 'size', 10, 48) + alignmentControl(c.align || 'start');
         } else if (block.block_type === 'article') {
-            html += input('Category', 'text', c.category || '', 'category') + input('Headline', 'text', c.headline || '', 'headline') + textarea('Description', c.description || '', 'description') + input('Article URL', 'url', c.url || '', 'url') + input('Button text', 'text', c.button_text || 'Read More', 'button_text') + fontControl(c.font || '') + alignmentControl(c.align || 'start') + imageControls();
+            html += input('Category', 'text', c.category || '', 'category') + input('Headline', 'text', c.headline || '', 'headline') + textarea('Description', c.description || '', 'description') + input('Article URL', 'url', c.url || '', 'url') + input('Button text', 'text', c.button_text || 'Read More', 'button_text') + fontControl(c.font || '') + numberInput('Category size', c.category_size || 12, 'category_size', 9, 24) + numberInput('Headline size', c.headline_size || 24, 'headline_size', 14, 56) + numberInput('Description size', c.description_size || 15, 'description_size', 10, 36) + numberInput('Link size', c.button_size || 15, 'button_size', 10, 32) + alignmentControl(c.align || 'start') + imageControls();
         } else if (block.block_type === 'image') {
             html += imageControls() + alignmentControl(c.align || 'start');
         } else if (block.block_type === 'button') {
-            html += input('Button text', 'text', c.text || '', 'text') + input('Button URL', 'url', c.url || '', 'url') + fontControl(c.font || '') + alignmentControl(c.align || 'start');
+            html += input('Button text', 'text', c.text || '', 'text') + input('Button URL', 'url', c.url || '', 'url') + fontControl(c.font || '') + numberInput('Button text size', c.size || 16, 'size', 10, 36) + alignmentControl(c.align || 'start');
         } else {
             html += alignmentControl(c.align || 'start');
         }
@@ -432,6 +432,10 @@
 
     function input(label, type, value, field) {
         return `<label>${label}<input class="form-control" type="${type}" data-field="${field}" value="${escapeAttr(value)}"></label>`;
+    }
+
+    function numberInput(label, value, field, min, max) {
+        return `<label>${label}<input class="form-control" type="number" min="${min}" max="${max}" step="1" data-field="${field}" value="${escapeAttr(value)}"></label>`;
     }
 
     function textarea(label, value, field) {

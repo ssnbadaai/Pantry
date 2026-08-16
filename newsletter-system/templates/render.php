@@ -84,31 +84,32 @@ function render_block_html(array $block, array $theme, string $mode): string
     $imageUrl = $image ? upload_url_from_path((string) $image) : '';
     $align = h(newsletter_align($content['align'] ?? 'start'));
     $font = h(newsletter_font($content['font'] ?? ''));
+    $size = newsletter_size($content['size'] ?? null, 16, 10, 72);
     ob_start();
 
     if ($block['block_type'] === 'headline'): ?>
-        <h3 style="font-size:<?= (int) ($content['size'] ?? 28) ?>px;text-align:<?= $align ?>;font-family:<?= $font ?>;margin:0 0 14px;">
+        <h3 style="font-size:<?= newsletter_size($content['size'] ?? null, 28, 10, 72) ?>px;text-align:<?= $align ?>;font-family:<?= $font ?>;margin:0 0 14px;">
             <?php if (!empty($content['url'])): ?><a style="color:<?= $linkColor ?>;text-decoration:none;" href="<?= h($content['url']) ?>"><?php endif; ?>
             <?= h($content['text'] ?? 'Headline') ?>
             <?php if (!empty($content['url'])): ?></a><?php endif; ?>
         </h3>
     <?php elseif ($block['block_type'] === 'text'): ?>
-        <div style="font-size:16px;line-height:1.6;margin-bottom:16px;text-align:<?= $align ?>;font-family:<?= $font ?>;"><?= clean_html((string) ($content['html'] ?? '<p>Write your text here.</p>')) ?></div>
+        <div style="font-size:<?= $size ?>px;line-height:1.6;margin-bottom:16px;text-align:<?= $align ?>;font-family:<?= $font ?>;"><?= clean_html((string) ($content['html'] ?? '<p>Write your text here.</p>')) ?></div>
     <?php elseif ($block['block_type'] === 'image'): ?>
         <?php if ($imageUrl): ?><div style="text-align:<?= $align ?>;"><img src="<?= h($imageUrl) ?>" alt="<?= h($content['alt'] ?? '') ?>" style="display:inline-block;width:100%;max-width:100%;height:auto;border-radius:<?= (int) ($theme['radius'] ?? 8) ?>px;margin-bottom:18px;"></div><?php endif; ?>
     <?php elseif ($block['block_type'] === 'button'): ?>
-        <p style="margin:18px 0;text-align:<?= $align ?>;"><a href="<?= h($content['url'] ?? '#') ?>" style="display:inline-block;background:<?= $buttonColor ?>;color:#fff;text-decoration:none;padding:11px 18px;border-radius:6px;font-weight:bold;font-family:<?= $font ?>;"><?= h($content['text'] ?? 'Read More') ?></a></p>
+        <p style="margin:18px 0;text-align:<?= $align ?>;"><a href="<?= h($content['url'] ?? '#') ?>" style="display:inline-block;background:<?= $buttonColor ?>;color:#fff;text-decoration:none;padding:11px 18px;border-radius:6px;font-weight:bold;font-size:<?= newsletter_size($content['size'] ?? null, 16, 10, 36) ?>px;font-family:<?= $font ?>;"><?= h($content['text'] ?? 'Read More') ?></a></p>
     <?php elseif ($block['block_type'] === 'divider'): ?>
         <div style="text-align:<?= $align ?>;"><hr style="display:inline-block;width:100%;border:0;border-top:1px solid #e5e7eb;margin:22px 0;"></div>
     <?php else: ?>
         <article style="margin-bottom:24px;text-align:<?= $align ?>;font-family:<?= $font ?>;">
             <?php if ($imageUrl): ?><a href="<?= h($content['url'] ?? '#') ?>"><img src="<?= h($imageUrl) ?>" alt="<?= h($content['image_alt'] ?? '') ?>" style="display:block;width:100%;height:auto;border-radius:<?= (int) ($theme['radius'] ?? 8) ?>px;margin-bottom:14px;"></a><?php endif; ?>
-            <?php if (!empty($content['category'])): ?><div style="font-size:12px;font-weight:bold;letter-spacing:.04em;text-transform:uppercase;color:<?= $linkColor ?>;"><?= h($content['category']) ?></div><?php endif; ?>
-            <h3 style="font-size:23px;line-height:1.2;margin:7px 0 8px;color:#111827;">
+            <?php if (!empty($content['category'])): ?><div style="font-size:<?= newsletter_size($content['category_size'] ?? null, 12, 9, 24) ?>px;font-weight:bold;letter-spacing:.04em;text-transform:uppercase;color:<?= $linkColor ?>;"><?= h($content['category']) ?></div><?php endif; ?>
+            <h3 style="font-size:<?= newsletter_size($content['headline_size'] ?? null, 23, 14, 56) ?>px;line-height:1.2;margin:7px 0 8px;color:#111827;">
                 <a style="color:inherit;text-decoration:none;" href="<?= h($content['url'] ?? '#') ?>"><?= h($content['headline'] ?? 'Article headline') ?></a>
             </h3>
-            <p style="font-size:15px;line-height:1.55;margin:0 0 12px;color:#475569;"><?= h($content['description'] ?? 'Short article description.') ?></p>
-            <?php if (!empty($content['url'])): ?><a style="color:<?= $linkColor ?>;font-weight:bold;" href="<?= h($content['url']) ?>"><?= h($content['button_text'] ?? 'Read More') ?></a><?php endif; ?>
+            <p style="font-size:<?= newsletter_size($content['description_size'] ?? null, 15, 10, 36) ?>px;line-height:1.55;margin:0 0 12px;color:#475569;"><?= h($content['description'] ?? 'Short article description.') ?></p>
+            <?php if (!empty($content['url'])): ?><a style="color:<?= $linkColor ?>;font-weight:bold;font-size:<?= newsletter_size($content['button_size'] ?? null, 15, 10, 32) ?>px;" href="<?= h($content['url']) ?>"><?= h($content['button_text'] ?? 'Read More') ?></a><?php endif; ?>
         </article>
     <?php endif;
 
@@ -137,6 +138,12 @@ function newsletter_font(string $font): string
         '"Courier New", Courier, monospace',
     ];
     return in_array($font, $fonts, true) ? $font : 'Arial, Helvetica, sans-serif';
+}
+
+function newsletter_size($value, int $default, int $min, int $max): int
+{
+    $size = is_numeric($value) ? (int) $value : $default;
+    return max($min, min($max, $size));
 }
 
 function render_newsletter_footer_html(array $theme, array $newsletter = [], ?array $subscriber = null): string
