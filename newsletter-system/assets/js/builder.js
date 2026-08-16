@@ -149,20 +149,78 @@
         renderSettings();
     }
 
+    function sectionTitlePlaceholder() {
+        return (state.meta.direction || 'rtl') === 'rtl' ? 'عنوان القسم' : 'Section title';
+    }
+
+    function safeColor(value, fallback) {
+        const color = String(value || '');
+        return /^#[0-9a-fA-F]{6}$/.test(color) ? color : fallback;
+    }
+
+    function cloneSection(section) {
+        const clone = JSON.parse(JSON.stringify(section));
+        clone.id = tempId();
+        clone.temp = true;
+        clone.blocks = (clone.blocks || []).map(block => Object.assign({}, block, { id: tempId(), temp: true }));
+        return clone;
+    }
+
+    function duplicateSection(sectionIndex) {
+        state.sections.splice(sectionIndex + 1, 0, cloneSection(state.sections[sectionIndex]));
+        selected = null;
+        scheduleSave();
+        render();
+        renderSettings();
+    }
+
+    function deleteSection(sectionIndex) {
+        if (!confirm('Delete this section?')) return;
+        state.sections.splice(sectionIndex, 1);
+        selected = null;
+        scheduleSave();
+        render();
+        renderSettings();
+    }
+
     function render() {
         canvas.innerHTML = '';
         canvas.setAttribute('dir', state.meta.direction || 'rtl');
         state.sections.forEach((section, sectionIndex) => {
+            section.settings = section.settings || {};
+            const background = safeColor(section.settings.background, '#ffffff');
+            const accent = safeColor(section.settings.accent, '#dfe5ee');
             const sectionEl = document.createElement('section');
             sectionEl.className = 'canvas-section';
             sectionEl.dataset.sectionIndex = String(sectionIndex);
-            if (section.settings && section.settings.background) sectionEl.style.background = section.settings.background;
-            if (section.settings && section.settings.accent) sectionEl.style.borderTop = `4px solid ${section.settings.accent}`;
-            sectionEl.innerHTML = `<input class="section-title-input" value="${escapeAttr(section.title)}" aria-label="Section title"><div class="section-blocks"></div>`;
+            sectionEl.style.background = background;
+            sectionEl.style.borderTop = `4px solid ${accent}`;
+            sectionEl.innerHTML = `<div class="section-header">
+                <button class="btn btn-sm btn-light icon-btn section-drag-handle" type="button" title="Move section" aria-label="Move section">${moveIcon()}</button>
+                <input class="section-title-input" value="${escapeAttr(section.title)}" placeholder="${escapeAttr(sectionTitlePlaceholder())}" aria-label="Section title">
+                <div class="section-style-tools">
+                    <label title="Section background"><span>Bg</span><input type="color" data-section-style="background" value="${escapeAttr(background)}" aria-label="Section background"></label>
+                    <label title="Section accent"><span>Accent</span><input type="color" data-section-style="accent" value="${escapeAttr(accent)}" aria-label="Section accent"></label>
+                    <button class="btn btn-sm btn-light icon-btn" data-section-action="duplicate" type="button" title="Duplicate section" aria-label="Duplicate section">${duplicateIcon()}</button>
+                    <button class="btn btn-sm btn-outline-danger icon-btn" data-section-action="delete" type="button" title="Delete section" aria-label="Delete section">${trashIcon()}</button>
+                </div>
+            </div><div class="section-blocks"></div>`;
             sectionEl.querySelector('.section-title-input').addEventListener('input', event => {
                 section.title = event.target.value;
                 scheduleSave();
             });
+            sectionEl.querySelector('[data-section-style="background"]').addEventListener('input', event => {
+                section.settings.background = event.target.value;
+                sectionEl.style.background = event.target.value;
+                scheduleSave();
+            });
+            sectionEl.querySelector('[data-section-style="accent"]').addEventListener('input', event => {
+                section.settings.accent = event.target.value;
+                sectionEl.style.borderTop = `4px solid ${event.target.value}`;
+                scheduleSave();
+            });
+            sectionEl.querySelector('[data-section-action="duplicate"]').addEventListener('click', () => duplicateSection(sectionIndex));
+            sectionEl.querySelector('[data-section-action="delete"]').addEventListener('click', () => deleteSection(sectionIndex));
 
             const list = sectionEl.querySelector('.section-blocks');
             section.blocks.forEach((block, blockIndex) => list.appendChild(renderBlock(block, sectionIndex, blockIndex)));
@@ -176,7 +234,7 @@
         });
 
         new Sortable(canvas, {
-            handle: '.section-title-input',
+            handle: '.section-drag-handle',
             animation: 150,
             onEnd: syncSectionsFromDom
         });
