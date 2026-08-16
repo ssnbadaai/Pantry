@@ -42,12 +42,13 @@
     }
 
     function defaultBlock(type) {
+        const arabic = (state.meta.direction || 'rtl') === 'rtl';
         const base = { id: tempId(), block_type: type, content: {}, settings: {}, temp: true };
-        if (type === 'headline') base.content = { text: 'Write a strong headline', size: 28, align: 'left', url: '' };
-        if (type === 'text') base.content = { html: '<p>Write your paragraph here.</p>' };
-        if (type === 'article') base.content = { category: 'Company News', headline: 'Article headline', description: 'Short description that summarizes the article.', url: '', button_text: 'Read More', image_id: null, image_url: '', image_alt: '' };
+        if (type === 'headline') base.content = { text: arabic ? 'عنوان النشرة' : 'Write a strong headline', size: 28, align: 'start', url: '' };
+        if (type === 'text') base.content = { html: arabic ? '<p>اكتب النص هنا.</p>' : '<p>Write your paragraph here.</p>', align: 'start' };
+        if (type === 'article') base.content = { category: arabic ? 'أخبار البانتري' : 'Company News', headline: arabic ? 'عنوان المقال' : 'Article headline', description: arabic ? 'وصف قصير للمقال.' : 'Short description that summarizes the article.', url: '', button_text: arabic ? 'اقرأ المزيد' : 'Read More', image_id: null, image_url: '', image_alt: '' };
         if (type === 'image') base.content = { image_id: null, image_url: app.appUrl + '/assets/img/placeholder.svg', alt: '' };
-        if (type === 'button') base.content = { text: 'Read More', url: '' };
+        if (type === 'button') base.content = { text: arabic ? 'اقرأ المزيد' : 'Read More', url: '' };
         if (type === 'divider') base.content = {};
         return base;
     }
@@ -99,8 +100,8 @@
         el.dataset.blockIndex = String(blockIndex);
         el.innerHTML = `<div class="block-actions">
             <button class="btn btn-sm btn-light icon-btn drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">${moveIcon()}</button>
-            <button class="btn btn-sm btn-light" data-action="duplicate" type="button">Duplicate</button>
-            <button class="btn btn-sm btn-outline-danger" data-action="delete" type="button">Delete</button>
+            <button class="btn btn-sm btn-light icon-btn" data-action="duplicate" type="button" title="Duplicate block" aria-label="Duplicate block">${duplicateIcon()}</button>
+            <button class="btn btn-sm btn-outline-danger icon-btn" data-action="delete" type="button" title="Delete block" aria-label="Delete block">${trashIcon()}</button>
         </div><div class="block-body"></div>`;
         el.addEventListener('click', event => {
             if (!event.target.closest('.block-actions')) selectBlock(sectionIndex, blockIndex);
@@ -556,6 +557,14 @@
 
     function moveIcon() {
         return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 7l4-4 4 4"/><path d="M12 3v18"/><path d="M8 17l4 4 4-4"/></svg>';
+    }
+
+    function duplicateIcon() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><rect x="4" y="4" width="12" height="12" rx="2"/></svg>';
+    }
+
+    function trashIcon() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 15h10l1-15"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
     }
 
     function alignLeftIcon() {

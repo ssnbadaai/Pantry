@@ -275,6 +275,7 @@ a {
 .canvas-block {
     position: relative;
     padding: 10px;
+    margin-top: 18px;
     margin-bottom: 10px;
     border: 1px solid transparent;
     border-radius: 8px;
@@ -289,10 +290,15 @@ a {
 .block-actions {
     position: absolute;
     right: 8px;
-    top: 8px;
+    top: -17px;
     display: none;
     gap: 4px;
     z-index: 2;
+    padding: 2px;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, .08);
 }
 
 [dir="rtl"] .block-actions {
@@ -301,17 +307,18 @@ a {
 }
 
 .icon-btn {
-    width: 34px;
-    height: 32px;
+    width: 26px;
+    height: 24px;
     display: inline-grid;
     place-items: center;
     padding: 0;
+    border-radius: 6px;
 }
 
 .icon-btn svg,
 .align-button svg {
-    width: 17px;
-    height: 17px;
+    width: 14px;
+    height: 14px;
     pointer-events: none;
 }
 
