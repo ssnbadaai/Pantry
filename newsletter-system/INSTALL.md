@@ -9,9 +9,14 @@
 7. Make these folders writable by PHP: `uploads/original`, `uploads/optimized`, and `uploads/thumbnails`.
 8. Install PHPMailer on the server from inside the project folder with `composer install`, or upload a Composer-generated `vendor` folder.
 9. Visit `/newsletter/admin/setup.php` and create the first administrator.
-10. Open Settings and configure SMTP for your domain email account.
-11. In cPanel DNS/email tools, configure SPF, DKIM, and DMARC for better deliverability.
-12. Add a cPanel cron job such as:
+10. Open Settings and confirm the Google SMTP values. Defaults are prefilled for Gmail SMTP:
+    - SMTP host: `smtp.gmail.com`
+    - Port: `587`
+    - Encryption: `TLS`
+    - Sender/username: `hello@omqpro.com`
+11. Paste the Google App Password for the sender account. This must be generated in Google; do not use the normal Google login password.
+12. In cPanel DNS/email tools, configure SPF, DKIM, and DMARC for better deliverability.
+13. Add a cPanel cron job such as:
 
 ```bash
 php /home/USERNAME/public_html/newsletter/cron/send_queue.php

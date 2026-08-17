@@ -17,12 +17,12 @@ return [
         'quality' => 82,
     ],
     'mail' => [
-        'host' => '',
+        'host' => 'smtp.gmail.com',
         'port' => 587,
-        'username' => '',
+        'username' => 'hello@omqpro.com',
         'password' => '',
         'encryption' => 'tls',
-        'batch_size' => 50,
+        'batch_size' => 25,
         'batch_delay_seconds' => 60,
     ],
 ];

@@ -23,6 +23,17 @@ The app keeps browser dependencies local in `assets/vendor` and uses Composer fo
 
 No paid newsletter platform, paid image editor, paid API, or external database is required.
 
+## Google Domain Email
+
+Google SMTP defaults are prefilled for the OMQ domain:
+
+- SMTP host: `smtp.gmail.com`
+- Port: `587`
+- Encryption: `TLS`
+- Sender/username: `hello@omqpro.com`
+
+You still need to enter the real Google account email if it is different and paste a Google App Password in Admin -> Settings. Do not use the normal Google login password.
+
 ## Project Structure
 
 ```text

@@ -138,9 +138,9 @@ create table settings (
 ) engine=InnoDB default charset=utf8mb4 collate=utf8mb4_unicode_ci;
 
 insert into settings (setting_key, setting_value, updated_at) values
-('sender_name', 'Newsletter', now()),
-('sender_email', '', now()),
-('reply_to', '', now()),
+('sender_name', 'OMQ', now()),
+('sender_email', 'hello@omqpro.com', now()),
+('reply_to', 'hello@omqpro.com', now()),
 ('footer_html', '<p style="margin:0 0 10px;font-weight:bold;color:#0f172a;">Follow @omqpro</p><p style="margin:0;"><a href="https://www.instagram.com/omqpro">Instagram</a> | <a href="https://www.facebook.com/omqpro">Facebook</a> | <a href="https://x.com/omqpro">X</a> | <a href="https://www.linkedin.com/company/omqpro">LinkedIn</a></p>', now()),
 ('theme', '{"primary":"#2563eb","secondary":"#0f172a","background":"#f7f8fb","text":"#1f2937","link":"#2563eb","button":"#2563eb","radius":8,"email_width":680}', now()),
-('smtp', '{"host":"","port":587,"username":"","password":"","encryption":"tls","batch_size":50,"batch_delay_seconds":60}', now());
+('smtp', '{"host":"smtp.gmail.com","port":587,"username":"hello@omqpro.com","password":"","encryption":"tls","batch_size":25,"batch_delay_seconds":60}', now());

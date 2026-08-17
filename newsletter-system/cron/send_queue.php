@@ -3,7 +3,7 @@ require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/mailer.php';
 require_once __DIR__ . '/../templates/render.php';
 
-$smtp = setting('smtp', []);
+$smtp = google_smtp_settings(setting('smtp', []), trim((string) setting('sender_email', '')) ?: 'hello@omqpro.com');
 $batchSize = max(1, (int) ($smtp['batch_size'] ?? 50));
 $items = db_all(
     "select q.*, s.unsubscribe_token, s.status as subscriber_status, n.subject

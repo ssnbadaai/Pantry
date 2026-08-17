@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 function send_newsletter_mail(string $to, string $subject, string $html, string $text = '', bool $isTest = false): array
 {
-    $senderEmail = (string) setting('sender_email', '');
-    $senderName = (string) setting('sender_name', 'Newsletter');
-    $replyTo = (string) setting('reply_to', $senderEmail);
-    $smtp = setting('smtp', []);
+    $senderEmail = trim((string) setting('sender_email', '')) ?: 'hello@omqpro.com';
+    $senderName = trim((string) setting('sender_name', '')) ?: 'OMQ';
+    $replyTo = trim((string) setting('reply_to', '')) ?: $senderEmail;
+    $smtp = google_smtp_settings(setting('smtp', []), $senderEmail);
     $subject = $isTest ? '[TEST EMAIL] ' . $subject : $subject;
 
     $autoload = dirname(__DIR__) . '/vendor/autoload.php';
@@ -49,4 +49,17 @@ function send_newsletter_mail(string $to, string $subject, string $html, string 
     ];
     $sent = mail($to, $subject, $html, implode("\r\n", $headers));
     return ['ok' => $sent, 'message' => $sent ? 'Sent with PHP mail().' : 'PHP mail() failed. Install PHPMailer for SMTP.'];
+}
+
+function google_smtp_settings(array $smtp, string $senderEmail): array
+{
+    return [
+        'host' => trim((string) ($smtp['host'] ?? '')) ?: 'smtp.gmail.com',
+        'port' => (int) ($smtp['port'] ?? 587) ?: 587,
+        'username' => trim((string) ($smtp['username'] ?? '')) ?: $senderEmail,
+        'password' => (string) ($smtp['password'] ?? ''),
+        'encryption' => trim((string) ($smtp['encryption'] ?? '')) ?: 'tls',
+        'batch_size' => (int) ($smtp['batch_size'] ?? 25) ?: 25,
+        'batch_delay_seconds' => (int) ($smtp['batch_delay_seconds'] ?? 60) ?: 60,
+    ];
 }
