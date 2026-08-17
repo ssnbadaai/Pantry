@@ -127,7 +127,7 @@ admin_header('Subscribers', 'subscribers');
                 <td><?= h($item['source']) ?></td>
                 <td class="text-end">
                     <form class="d-inline" method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $item['id'] ?>"><button class="btn btn-sm btn-outline-secondary" name="action" value="unsubscribe">Unsubscribe</button></form>
-                    <form class="d-inline" method="post" onsubmit="return confirm('Delete this subscriber?')"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $item['id'] ?>"><button class="btn btn-sm btn-outline-danger" name="action" value="delete">Delete</button></form>
+                    <form class="d-inline" method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $item['id'] ?>"><button class="btn btn-sm btn-outline-danger" name="action" value="delete" data-confirm="Delete this subscriber?" data-confirm-detail="The subscriber will be removed from the list." data-confirm-action="Delete subscriber">Delete</button></form>
                 </td>
             </tr>
         <?php endforeach; ?>

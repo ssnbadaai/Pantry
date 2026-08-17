@@ -462,6 +462,98 @@ a {
     max-height: 62vh;
 }
 
+.app-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(15, 23, 42, .46);
+    backdrop-filter: blur(3px);
+}
+
+.app-dialog {
+    position: relative;
+    width: min(420px, 100%);
+    padding: 24px;
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 22px 60px rgba(15, 23, 42, .24);
+}
+
+.app-dialog-close {
+    position: absolute;
+    top: 12px;
+    inset-inline-end: 12px;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    color: #64748b;
+    background: transparent;
+}
+
+.app-dialog-close:hover {
+    color: #0f172a;
+    background: #f1f5f9;
+}
+
+.app-dialog-close svg,
+.app-dialog-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.app-dialog-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    color: var(--primary);
+    background: #eef4ff;
+}
+
+.app-dialog-icon.danger {
+    color: var(--danger);
+    background: #fee2e2;
+}
+
+.app-dialog h2 {
+    margin: 0;
+    margin-inline-end: 34px;
+    margin-bottom: 8px;
+    font-size: 20px;
+    line-height: 1.25;
+}
+
+.app-dialog p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+.app-dialog-field {
+    display: grid;
+    gap: 7px;
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.app-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
+
 @media (max-width: 1100px) {
     .builder-grid {
         grid-template-columns: 190px minmax(320px, 1fr);

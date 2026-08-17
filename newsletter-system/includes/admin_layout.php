@@ -54,8 +54,8 @@ function admin_footer(): void
     ?>
 </main>
 <script src="<?= h(app_url('assets/vendor/bootstrap/bootstrap.bundle.min.js')) ?>"></script>
+<script src="<?= h(app_url('assets/js/admin-dialog.js')) ?>"></script>
 </body>
 </html>
     <?php
 }
-

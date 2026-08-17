@@ -52,7 +52,7 @@ admin_header('Newsletters', 'newsletters');
                     <a class="btn btn-sm btn-outline-primary" href="<?= h(app_url('admin/newsletter-edit.php?id=' . $item['id'])) ?>">Edit</a>
                     <a class="btn btn-sm btn-outline-secondary" target="_blank" href="<?= h(app_url($item['slug'])) ?>">Preview</a>
                     <form class="d-inline" method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $item['id'] ?>"><button class="btn btn-sm btn-outline-secondary" name="action" value="duplicate">Duplicate</button></form>
-                    <form class="d-inline" method="post" onsubmit="return confirm('Delete this newsletter?')"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $item['id'] ?>"><button class="btn btn-sm btn-outline-danger" name="action" value="delete">Delete</button></form>
+                    <form class="d-inline" method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $item['id'] ?>"><button class="btn btn-sm btn-outline-danger" name="action" value="delete" data-confirm="Delete this newsletter?" data-confirm-detail="This newsletter and its sections will be removed." data-confirm-action="Delete newsletter">Delete</button></form>
                 </td>
             </tr>
         <?php endforeach; ?>

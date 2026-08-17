@@ -139,9 +139,13 @@
         ];
     }
 
-    function applyPantryTemplate() {
+    async function applyPantryTemplate() {
         const hasContent = state.sections.some(section => section.title || (section.blocks && section.blocks.length));
-        if (hasContent && !confirm('Apply the Pantry template and replace the current sections?')) return;
+        if (hasContent && !(await showConfirm({
+            title: 'Apply template?',
+            message: 'This will replace the current sections with the Pantry template.',
+            confirmText: 'Apply template'
+        }))) return;
         state.meta.direction = 'rtl';
         state.meta.title = state.meta.title && state.meta.title !== 'New Newsletter' ? state.meta.title : 'نشرة البانتري';
         state.meta.subject = state.meta.subject && state.meta.subject !== 'New Newsletter' ? state.meta.subject : 'نشرة البانتري';
@@ -183,8 +187,13 @@
         renderSettings();
     }
 
-    function deleteSection(sectionIndex) {
-        if (!confirm('Delete this section?')) return;
+    async function deleteSection(sectionIndex) {
+        if (!(await showConfirm({
+            title: 'Delete section?',
+            message: 'This section and all blocks inside it will be removed from the newsletter.',
+            confirmText: 'Delete section',
+            danger: true
+        }))) return;
         state.sections.splice(sectionIndex, 1);
         selected = null;
         scheduleSave();
@@ -511,8 +520,13 @@
         render();
     }
 
-    function deleteBlock(sectionIndex, blockIndex) {
-        if (!confirm('Delete this block?')) return;
+    async function deleteBlock(sectionIndex, blockIndex) {
+        if (!(await showConfirm({
+            title: 'Delete block?',
+            message: 'This block will be removed from the newsletter.',
+            confirmText: 'Delete block',
+            danger: true
+        }))) return;
         state.sections[sectionIndex].blocks.splice(blockIndex, 1);
         selected = null;
         scheduleSave();
@@ -622,12 +636,18 @@
             imageSmoothingQuality: 'high'
         });
         if (!croppedCanvas) {
-            alert('The image could not be cropped.');
+            await showNotice({
+                title: 'Crop failed',
+                message: 'The image could not be cropped.'
+            });
             return;
         }
         const blob = await new Promise(resolve => croppedCanvas.toBlob(resolve, 'image/jpeg', 0.88));
         if (!blob) {
-            alert('The image could not be cropped.');
+            await showNotice({
+                title: 'Crop failed',
+                message: 'The image could not be cropped.'
+            });
             return;
         }
         const formData = new FormData();
@@ -640,7 +660,10 @@
         });
         const data = await response.json();
         if (!data.ok) {
-            alert(data.message || 'The image could not be cropped.');
+            await showNotice({
+                title: 'Crop failed',
+                message: data.message || 'The image could not be cropped.'
+            });
             return;
         }
         applyMediaToBlock(data.media);
@@ -654,7 +677,10 @@
         const response = await fetch(app.appUrl + '/api/media/upload.php', { method: 'POST', body: formData });
         const data = await response.json();
         if (!data.ok) {
-            alert(data.message || 'The image could not be uploaded.');
+            await showNotice({
+                title: 'Upload failed',
+                message: data.message || 'The image could not be uploaded.'
+            });
             return;
         }
         prependMedia(data.media);
@@ -733,7 +759,14 @@
 
     document.getElementById('testEmailBtn').addEventListener('click', async () => {
         await saveNow();
-        const to = prompt('Send test email to:');
+        const to = await showPrompt({
+            title: 'Send test email',
+            message: 'Enter the email address that should receive this test.',
+            label: 'Recipient email',
+            inputType: 'email',
+            placeholder: 'name@example.com',
+            confirmText: 'Send test'
+        });
         if (!to) return;
         const response = await fetch(app.appUrl + '/api/email/send-test.php', {
             method: 'POST',
@@ -741,20 +774,104 @@
             body: JSON.stringify({ newsletter_id: app.newsletterId, to })
         });
         const data = await response.json();
-        alert(data.message || (data.ok ? 'Test sent.' : 'Test failed.'));
+        await showNotice({
+            title: data.ok ? 'Test sent' : 'Test failed',
+            message: data.message || (data.ok ? 'Test sent.' : 'Test failed.')
+        });
     });
 
     document.getElementById('queueSendBtn').addEventListener('click', async () => {
         await saveNow();
-        if (!confirm('Publish this newsletter and queue it for all active subscribers?')) return;
+        if (!(await showConfirm({
+            title: 'Publish newsletter?',
+            message: 'This will publish the newsletter and queue it for all active subscribers.',
+            confirmText: 'Publish / Send'
+        }))) return;
         const response = await fetch(app.appUrl + '/api/email/queue.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': app.csrf },
             body: JSON.stringify({ newsletter_id: app.newsletterId })
         });
         const data = await response.json();
-        alert(data.message || 'Queued.');
+        await showNotice({
+            title: data.ok === false ? 'Publish failed' : 'Newsletter queued',
+            message: data.message || 'Queued.'
+        });
     });
+
+    function showConfirm(options) {
+        return showDialog(Object.assign({ type: 'confirm' }, options));
+    }
+
+    function showNotice(options) {
+        return showDialog(Object.assign({ type: 'notice', confirmText: 'OK' }, options));
+    }
+
+    function showPrompt(options) {
+        return showDialog(Object.assign({ type: 'prompt' }, options));
+    }
+
+    function showDialog(options) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'app-dialog-backdrop';
+            overlay.innerHTML = `<div class="app-dialog" role="dialog" aria-modal="true" aria-labelledby="appDialogTitle">
+                <button class="app-dialog-close" type="button" aria-label="Close">${closeIcon()}</button>
+                <div class="app-dialog-icon ${options.danger ? 'danger' : ''}">${options.danger ? trashIcon() : dialogIcon()}</div>
+                <h2 id="appDialogTitle">${escapeHtml(options.title || 'Confirm action')}</h2>
+                <p>${escapeHtml(options.message || '')}</p>
+                ${options.type === 'prompt' ? `<label class="app-dialog-field">${escapeHtml(options.label || 'Value')}<input class="form-control" type="${escapeAttr(options.inputType || 'text')}" placeholder="${escapeAttr(options.placeholder || '')}" value="${escapeAttr(options.value || '')}"></label>` : ''}
+                <div class="app-dialog-actions">
+                    ${options.type === 'notice' ? '' : '<button class="btn btn-outline-secondary" type="button" data-dialog-cancel>Cancel</button>'}
+                    <button class="btn ${options.danger ? 'btn-danger' : 'btn-primary'}" type="button" data-dialog-confirm>${escapeHtml(options.confirmText || 'Confirm')}</button>
+                </div>
+            </div>`;
+            document.body.appendChild(overlay);
+            const panel = overlay.querySelector('.app-dialog');
+            const input = overlay.querySelector('input');
+            const confirmButton = overlay.querySelector('[data-dialog-confirm]');
+            const cancelButton = overlay.querySelector('[data-dialog-cancel]');
+            const closeButton = overlay.querySelector('.app-dialog-close');
+            const previousFocus = document.activeElement;
+
+            function close(value) {
+                overlay.remove();
+                document.removeEventListener('keydown', onKeydown);
+                if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+                resolve(value);
+            }
+
+            function acceptDialog() {
+                if (options.type === 'prompt') {
+                    const value = input ? input.value.trim() : '';
+                    if (!value) {
+                        if (input) input.focus();
+                        return;
+                    }
+                    close(value);
+                    return;
+                }
+                close(true);
+            }
+
+            function onKeydown(event) {
+                if (event.key === 'Escape') close(options.type === 'notice' ? true : false);
+                if (event.key === 'Enter' && (event.target === input || event.target === confirmButton)) {
+                    event.preventDefault();
+                    acceptDialog();
+                }
+            }
+
+            confirmButton.addEventListener('click', acceptDialog);
+            if (cancelButton) cancelButton.addEventListener('click', () => close(false));
+            closeButton.addEventListener('click', () => close(options.type === 'notice' ? true : false));
+            overlay.addEventListener('click', event => {
+                if (event.target === overlay) close(options.type === 'notice' ? true : false);
+            });
+            document.addEventListener('keydown', onKeydown);
+            setTimeout(() => (input || confirmButton).focus(), 0);
+        });
+    }
 
     function escapeHtml(value) {
         const div = document.createElement('div');
@@ -797,6 +914,14 @@
 
     function alignRightIcon() {
         return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16"/><path d="M10 12h10"/><path d="M6 18h14"/></svg>';
+    }
+
+    function closeIcon() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+    }
+
+    function dialogIcon() {
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>';
     }
 
     render();

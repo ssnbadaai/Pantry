@@ -41,7 +41,7 @@ admin_header('Media Library', 'media');
                     <input class="form-control form-control-sm" name="alt_text" value="<?= h($item['alt_text']) ?>" placeholder="Alt text">
                     <div class="d-flex gap-1">
                         <button class="btn btn-sm btn-outline-primary" name="action" value="rename">Save</button>
-                        <button class="btn btn-sm btn-outline-danger" name="action" value="delete" onclick="return confirm('Delete this media record?')">Delete</button>
+                        <button class="btn btn-sm btn-outline-danger" name="action" value="delete" data-confirm="Delete this media record?" data-confirm-detail="The image record will be removed from the media library." data-confirm-action="Delete media">Delete</button>
                     </div>
                 </form>
                 <div class="mt-2"><?= (int) $item['width'] ?> x <?= (int) $item['height'] ?> - <?= number_format((int) $item['file_size'] / 1024, 1) ?> KB</div>
